@@ -1,0 +1,53 @@
+name: Windows build
+on:
+  push:
+    branches:
+    - dev
+
+env:
+  KF_VER: 6.8.0
+
+jobs:
+  build:
+    name: build
+    runs-on: windows-latest
+    env:
+      CRAFT_SHORT_PATH: ${{ github.workspace }}\_
+      CRAFT_ROOT_DIR: ${{ github.workspace }}\CraftRoot
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          path: 'qvanced'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: '3.12'
+      - name: Setup KDE Craft
+        run: |
+          # Set up directories
+          mkdir "$env:CRAFT_ROOT_DIR\download" | Out-Null
+          mkdir "$env:CRAFT_ROOT_DIR\etc" | Out-Null
+
+          # Download Craft
+          Invoke-WebRequest "https://invent.kde.org/packaging/craft/-/archive/master/craft-master.zip" -OutFile "$env:CRAFT_ROOT_DIR\download\craft-master.zip"
+          Expand-Archive "$env:CRAFT_ROOT_DIR\download\craft-master.zip" -DestinationPath "$env:CRAFT_ROOT_DIR"
+          mv "$env:CRAFT_ROOT_DIR\craft-master" "$env:CRAFT_ROOT_DIR\craft-tmp"
+
+          # Remove "Evil Applications" from path
+          $path = ($env:PATH.Split(';') | Where-Object {($_ -ne "C:\mingw64\bin") -and ($_ -ne "C:\Program Files\Git\bin")}) -join ';'
+          
+          # Setup CraftSettings.ini
+          $craftSettings = Get-Content "${{ github.workspace }}\qvanced\craft\CraftSettings.windows.template" -Raw
+          $craftSettings = $craftSettings.Replace("%%PYTHON_INSTALL_DIR%%", "$env:pythonLocation")
+          $craftSettings = $craftSettings.Replace("%%SHORT_PATH%%", "$env:CRAFT_SHORT_PATH")
+          $craftSettings = $craftSettings.Replace("%%MSYS_INSTALL_DIR%%", "C:\msys64")
+          $craftSettings = $craftSettings.Replace("%%PATH%%", "$path")
+          
+          Set-Content -Path "$env:CRAFT_ROOT_DIR\etc\CraftSettings.ini" -Value "$craftSettings"
+          Set-Content -Path "$env:CRAFT_ROOT_DIR\craft-tmp\etc\CraftSettings.ini" -Value "$craftSettings"
+          python "$env:CRAFT_ROOT_DIR\craft-tmp\bin\craft.py" craft
+      - name: Build KDE stuffs
+        run: |
+          python $env:CRAFT_ROOT_DIR\craft\bin\craft.py kcoreaddons kconfig ki18n kirigami kirigami-gallery

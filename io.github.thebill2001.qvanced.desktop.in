@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileCopyrightText: 2024 Trần Nam Tuấn <tuantran1632001@gmail.com>
+[Desktop Entry]
+Version=@PROJECT_VERSION@
+Type=Application
+
+Name=QVanced
+Comment=Modifying Android APKs with Revanced patches
+Categories=Utility;KDE;Qt
+
+Icon=qvanced
+Exec=qvanced
+Terminal=false

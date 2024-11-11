@@ -1,0 +1,22 @@
+<!--
+    SPDX-License-Identifier: CC0-1.0
+    SPDX-FileCopyrightText: 2024 Trần Nam Tuấn <tuantran1632001@gmail.com>
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>io.github.thebill2001.qvanced</id>
+
+    <name>QVanced</name>
+    <summary>Modifying Android APKs with Revanced patches</summary>
+
+    <metadata_license>CC0-1.0</metadata_license>
+    <project_license>GPL-3.0-only</project_license>
+
+    <description>
+        <p>
+            Modifying Android APKs with Revanced patches
+        </p>
+    </description>
+
+    <launchable type="desktop-id">io.github.thebill2001.qvanced.desktop</launchable>
+</component>
