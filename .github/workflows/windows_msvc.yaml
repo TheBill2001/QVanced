@@ -12,9 +12,6 @@ jobs:
   build:
     name: build
     runs-on: windows-latest
-    env:
-      CRAFT_SHORT_PATH: ${{ github.workspace }}\_
-      CRAFT_ROOT_DIR: ${{ github.workspace }}\CraftRoot
     steps:
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -24,13 +21,13 @@ jobs:
       - name: Setup KDE Craft
         run: |
           # Set up directories
-          mkdir "$env:CRAFT_ROOT_DIR\download" | Out-Null
-          mkdir "$env:CRAFT_ROOT_DIR\etc" | Out-Null
+          mkdir ".\CraftRoot\download" | Out-Null
+          mkdir ".\CraftRoot\etc" | Out-Null
 
           # Download Craft
-          Invoke-WebRequest "https://invent.kde.org/packaging/craft/-/archive/master/craft-master.zip" -OutFile "$env:CRAFT_ROOT_DIR\download\craft-master.zip"
-          Expand-Archive "$env:CRAFT_ROOT_DIR\download\craft-master.zip" -DestinationPath "$env:CRAFT_ROOT_DIR"
-          mv "$env:CRAFT_ROOT_DIR\craft-master" "$env:CRAFT_ROOT_DIR\craft-tmp"
+          Invoke-WebRequest "https://invent.kde.org/packaging/craft/-/archive/master/craft-master.zip" -OutFile ".\CraftRoot\download\craft-master.zip"
+          Expand-Archive ".\CraftRoot\download\craft-master.zip" -DestinationPath ".\CraftRoot"
+          mv ".\CraftRoot\craft-master" ".\CraftRoot\craft-tmp"
 
           # Remove "Evil Applications" from path
           $path = ($env:PATH.Split(';') | Where-Object {($_ -ne "C:\mingw64\bin") -and ($_ -ne "C:\Program Files\Git\bin")}) -join ';'
@@ -38,20 +35,26 @@ jobs:
           # Setup CraftSettings.ini
           $craftSettings = (Invoke-WebRequest "https://raw.githubusercontent.com/TheBill2001/craft-blueprints-qvanced/refs/heads/master/CraftSettings.Windows.MSVC.ini").Content
           $craftSettings = $craftSettings.Replace("%%PYTHON_INSTALL_DIR%%", "$env:pythonLocation")
-          $craftSettings = $craftSettings.Replace("%%SHORT_PATH%%", "$env:CRAFT_SHORT_PATH")
+          $craftSettings = $craftSettings.Replace("%%SHORT_PATH%%", "${{ github.workspace }}\_")
           $craftSettings = $craftSettings.Replace("%%MSYS_INSTALL_DIR%%", "C:\msys64")
           $craftSettings = $craftSettings.Replace("%%PATH%%", "$path")
           
-          Set-Content -Path "$env:CRAFT_ROOT_DIR\etc\CraftSettings.ini" -Value "$craftSettings"
-          Set-Content -Path "$env:CRAFT_ROOT_DIR\craft-tmp\etc\CraftSettings.ini" -Value "$craftSettings"
-          python "$env:CRAFT_ROOT_DIR\craft-tmp\bin\craft.py" craft
+          Set-Content -Path ".\CraftRoot\etc\CraftSettings.ini" -Value "$craftSettings"
+          Set-Content -Path ".\CraftRoot\craft-tmp\etc\CraftSettings.ini" -Value "$craftSettings"
+          python ".\CraftRoot\craft-tmp\bin\craft.py" craft
       - name: Build QVanced
         run: |
-          python $env:CRAFT_ROOT_DIR\craft\bin\craft.py --add-blueprint-repository "https://github.com/TheBill2001/craft-blueprints-qvanced.git"
-          python $env:CRAFT_ROOT_DIR\craft\bin\craft.py nsis qvanced
+          python .\CraftRoot\craft\bin\craft.py --add-blueprint-repository "https://github.com/TheBill2001/craft-blueprints-qvanced.git"
+          python .\CraftRoot\craft\bin\craft.py qvanced
+  deploy:
+    need: build
+    runs-on: windows-latest
+    steps:
       - name: Package QVanced
-        run: python $env:CRAFT_ROOT_DIR\craft\bin\craft.py --package qvanced
+        run: |
+          python .\CraftRoot\craft\bin\craft.py nsis
+          python .\CraftRoot\craft\bin\craft.py --package qvanced
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: $env:CRAFT_ROOT_DIR\tmp\*.*
+          path: CraftRoot\tmp\*.*
