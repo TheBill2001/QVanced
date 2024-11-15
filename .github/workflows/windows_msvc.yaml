@@ -47,7 +47,7 @@ jobs:
           python .\CraftRoot\craft\bin\craft.py --add-blueprint-repository "https://github.com/TheBill2001/craft-blueprints-qvanced.git"
           python .\CraftRoot\craft\bin\craft.py qvanced
   deploy:
-    need: build
+    needs: build
     runs-on: windows-latest
     steps:
       - name: Package QVanced
