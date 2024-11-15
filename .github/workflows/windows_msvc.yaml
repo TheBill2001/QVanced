@@ -54,4 +54,4 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: $env:CRAFT_ROOT_DIR\tmp
+          path: $env:CRAFT_ROOT_DIR\tmp\*.*
