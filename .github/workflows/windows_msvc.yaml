@@ -40,7 +40,7 @@ jobs:
           $path = ($env:PATH.Split(';') | Where-Object {($_ -ne "C:\mingw64\bin") -and ($_ -ne "C:\Program Files\Git\bin")}) -join ';'
           
           # Setup CraftSettings.ini
-          $craftSettings = Invoke-WebRequest "https://raw.githubusercontent.com/TheBill2001/craft-blueprints-qvanced/refs/heads/master/CraftSettings.Windows.MSVC.ini" -PassThru
+          $craftSettings = Invoke-WebRequest "https://raw.githubusercontent.com/TheBill2001/craft-blueprints-qvanced/refs/heads/master/CraftSettings.Windows.MSVC.ini"
           $craftSettings = $craftSettings.Replace("%%PYTHON_INSTALL_DIR%%", "$env:pythonLocation")
           $craftSettings = $craftSettings.Replace("%%SHORT_PATH%%", "$env:CRAFT_SHORT_PATH")
           $craftSettings = $craftSettings.Replace("%%MSYS_INSTALL_DIR%%", "C:\msys64")
