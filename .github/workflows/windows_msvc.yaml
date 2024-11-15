@@ -1,5 +1,6 @@
-name: Windows build
+name: Windows MSVC build
 on:
+  workflow_dispatch:
   push:
     branches:
     - dev
@@ -39,7 +40,7 @@ jobs:
           $path = ($env:PATH.Split(';') | Where-Object {($_ -ne "C:\mingw64\bin") -and ($_ -ne "C:\Program Files\Git\bin")}) -join ';'
           
           # Setup CraftSettings.ini
-          $craftSettings = Get-Content "${{ github.workspace }}\qvanced\craft\CraftSettings.windows.template" -Raw
+          $craftSettings = Invoke-WebRequest "https://raw.githubusercontent.com/TheBill2001/craft-blueprints-qvanced/refs/heads/master/CraftSettings.Windows.MSVC.ini" -PassThru
           $craftSettings = $craftSettings.Replace("%%PYTHON_INSTALL_DIR%%", "$env:pythonLocation")
           $craftSettings = $craftSettings.Replace("%%SHORT_PATH%%", "$env:CRAFT_SHORT_PATH")
           $craftSettings = $craftSettings.Replace("%%MSYS_INSTALL_DIR%%", "C:\msys64")
@@ -48,6 +49,13 @@ jobs:
           Set-Content -Path "$env:CRAFT_ROOT_DIR\etc\CraftSettings.ini" -Value "$craftSettings"
           Set-Content -Path "$env:CRAFT_ROOT_DIR\craft-tmp\etc\CraftSettings.ini" -Value "$craftSettings"
           python "$env:CRAFT_ROOT_DIR\craft-tmp\bin\craft.py" craft
-      - name: Build KDE stuffs
+      - name: Build QVanced
         run: |
-          python $env:CRAFT_ROOT_DIR\craft\bin\craft.py kcoreaddons kconfig ki18n kirigami kirigami-gallery
+          python $env:CRAFT_ROOT_DIR\craft\bin\craft.py --add-blueprint-repository "https://github.com/TheBill2001/craft-blueprints-qvanced.git"
+          python $env:CRAFT_ROOT_DIR\craft\bin\craft.py nsis qvanced
+      - name: Package QVanced
+        run: python $env:CRAFT_ROOT_DIR\craft\bin\craft.py --package qvanced
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          path: $env:CRAFT_ROOT_DIR\tmp

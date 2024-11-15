@@ -16,8 +16,8 @@ target_sources(qvanced
 
 ecm_target_qml_sources(qvanced
     SOURCES
-            contents/ui/Main.qml
-            contents/ui/About.qml
+        contents/ui/Main.qml
+        contents/ui/About.qml
 )
 
 kconfig_add_kcfg_files(qvanced GENERATE_MOC qvancedconfig.kcfgc)
